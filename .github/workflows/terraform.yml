@@ -19,10 +19,11 @@ jobs:
   terraform:
     runs-on: self-hosted
     env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      TF_VAR_ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      TF_VAR_ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      TF_VAR_ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      TF_VAR_ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      TF_VAR_admin_password: ${{ secrets.USERPWD }}
 
     steps:
       - name: Checkout code
@@ -35,16 +36,21 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: ./modules/azure_vm
 
       - name: Terraform Format Check
         run: terraform fmt -check
+        working-directory: ./modules/azure_vm
 
       - name: Terraform Validate
         run: terraform validate
+        working-directory: ./modules/azure_vm
 
       - name: Terraform Plan
         run: terraform plan -input=false -out=tfplan
+        working-directory: ./modules/azure_vm
 
       - name: Terraform Apply (on push to main)
         if: github.event_name == 'push'
         run: terraform apply -input=false -auto-approve tfplan
+        working-directory: ./modules/azure_vm
