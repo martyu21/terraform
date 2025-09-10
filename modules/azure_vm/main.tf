@@ -1,6 +1,5 @@
 provider "azurerm" {
   features {}
-  subscription_id = "e8645d64-cebf-417b-981c-4b3368e388f2"
   resource_provider_registrations = "none"
 
   client_id       = var.client_id
