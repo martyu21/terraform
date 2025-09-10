@@ -1,1 +1,1 @@
-admin_password = ${{ secrets.USERPWD }}
+admin_password = var.admin_password
