@@ -1,1 +1,0 @@
-admin_password = var.admin_password
