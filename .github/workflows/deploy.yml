@@ -13,6 +13,10 @@ jobs:
       TF_VAR_admin_password: ${{ secrets.USERPWD }}
 
     steps:
+
+      - name: Debug Issue Body
+        run: echo "${{ github.event.issue.body }}"
+     
       - name: Parse IssueOps Form
         id: parser
         uses: issue-ops/parser@v1
