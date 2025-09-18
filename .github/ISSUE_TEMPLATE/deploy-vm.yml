@@ -30,3 +30,14 @@ body:
       label: "Additional Notes"
       description: "Optional context or configuration overrides"
       placeholder: "e.g. Use Ubuntu 22.04, attach to subnet-x"
+
+  - type: dropdown
+    id: action
+    attributes:
+      label: "Terraform Action"
+      description: "Choose whether to plan or destroy"
+      options:
+        - plan
+        - destroy
+    validations:
+      required: true

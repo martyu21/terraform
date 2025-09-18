@@ -15,7 +15,8 @@ jobs:
     steps:
       - name: Extract VM name
         run: |
-          echo "VM_NAME=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Deploy\] VM: (.*)/\1/')" >> $GITHUB_ENV
+          echo "ACTION=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Terraform\] (.*):.*/\1/')" >> $GITHUB_ENV
+          echo "VM_NAME=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Terraform\] .*: (.*)/\1/')" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,10 +39,16 @@ jobs:
         working-directory: ./modules/azure_vm
 
       - name: Terraform Plan
+        if: env.ACTION == 'plan'
         run: terraform plan -input=false -out=tfplan  -var "vm_name=${{ env.VM_NAME }}"
         working-directory: ./modules/azure_vm
 
-      - name: Terraform Apply (on push to main)
-        if: github.event_name == 'push'
+      - name: Terraform Apply
+        if: env.ACTION == 'plan'
         run: terraform apply -input=false -auto-approve tfplan
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Destroy
+        if: env.ACTION == 'destroy'
+        run: terraform destroy -auto-approve -var="vm_name=${{ env.VM_NAME }}"
         working-directory: ./modules/azure_vm
