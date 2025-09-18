@@ -13,10 +13,16 @@ jobs:
       TF_VAR_admin_password: ${{ secrets.USERPWD }}
 
     steps:
+      - name: Parse IssueOps Form
+        id: parser
+        uses: issue-ops/parser@v1
+        with:
+          body: ${{ github.event.issue.body }}
+
       - name: Extract VM name
         run: |
-          echo "ACTION=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Terraform\] (.*):.*/\1/')" >> $GITHUB_ENV
-          echo "VM_NAME=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Terraform\] .*: (.*)/\1/')" >> $GITHUB_ENV
+          echo "ACTION=${{ fromJson(steps.parser.outputs.json).action }}" >> $GITHUB_ENV
+          echo "VM_NAME=${{ fromJson(steps.parser.outputs.json).vm_name }}" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v3
