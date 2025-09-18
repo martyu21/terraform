@@ -38,10 +38,10 @@ jobs:
         working-directory: ./modules/azure_vm
 
       - name: Terraform Plan
-        run: terraform plan -input=false -out=tfplan
+        run: terraform plan -input=false -out=tfplan  -var "vm_name=${{ env.VM_NAME }}"
         working-directory: ./modules/azure_vm
 
       - name: Terraform Apply (on push to main)
         if: github.event_name == 'push'
-        run: terraform apply -input=false -auto-approve tfplan -var "vm_name=${{ env.VM_NAME }}"
+        run: terraform apply -input=false -auto-approve tfplan
         working-directory: ./modules/azure_vm
