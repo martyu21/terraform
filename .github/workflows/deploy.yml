@@ -4,20 +4,44 @@ on:
 
 jobs:
   deploy_vm:
-    if: contains(github.event.issue.title, '[Deploy] VM:')
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    env:
+      TF_VAR_client_id: ${{ secrets.ARM_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+      TF_VAR_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      TF_VAR_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+      TF_VAR_admin_password: ${{ secrets.USERPWD }}
+
     steps:
       - name: Extract VM name
         run: |
           echo "VM_NAME=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Deploy\] VM: (.*)/\1/')" >> $GITHUB_ENV
 
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform/azure
+        working-directory: ./modules/azure_vm
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var "vm_name=${{ env.VM_NAME }}"
-        working-directory: ./terraform/azure
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -out=tfplan
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Apply (on push to main)
+        if: github.event_name == 'push'
+        run: terraform apply -input=false -auto-approve tfplan -var "vm_name=${{ env.VM_NAME }}"
+        working-directory: ./modules/azure_vm
