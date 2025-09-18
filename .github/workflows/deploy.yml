@@ -22,6 +22,8 @@ jobs:
         uses: issue-ops/parser@v1
         with:
           body: ${{ github.event.issue.body }}
+          issue-form-template: deploy-vm  # ← match your form filename (without .yml)
+
 
       - name: Extract VM name
         run: |
