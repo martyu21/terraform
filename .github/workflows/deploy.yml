@@ -1,0 +1,23 @@
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  deploy_vm:
+    if: contains(github.event.issue.title, '[Deploy] VM:')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract VM name
+        run: |
+          echo "VM_NAME=$(echo '${{ github.event.issue.title }}' | sed -E 's/\[Deploy\] VM: (.*)/\1/')" >> $GITHUB_ENV
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform/azure
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var "vm_name=${{ env.VM_NAME }}"
+        working-directory: ./terraform/azure
