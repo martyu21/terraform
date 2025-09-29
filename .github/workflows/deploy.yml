@@ -68,11 +68,9 @@ jobs:
         run: terraform destroy -auto-approve -var="vm_name=${{ env.VM_NAME }}"
         working-directory: ./modules/azure_vm
 
-      - name: Install GitHub CLI
+      - name: Check gh CLI version
         if: success()
-        run: |
-          curl -fsSL https://cli.github.com/install.sh | bash
-          gh --version
+        run: gh--version
 
       - name: Close issue if successful
         if: success() && github.event_name == 'issues'
