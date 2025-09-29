@@ -70,7 +70,7 @@ jobs:
 
       - name: Check gh CLI version
         if: success()
-        run: gh--version
+        run: gh --version
 
       - name: Close issue if successful
         if: success() && github.event_name == 'issues'
