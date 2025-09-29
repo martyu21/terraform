@@ -33,7 +33,7 @@ jobs:
 
       - name: Extract VM name
         run: |
-          echo "ACTION=${{ fromJson(steps.parser.outputs.json).terraform_action }}" >> $GITHUB_ENV
+          echo "ACTION=${{ fromJson(steps.parser.outputs.json).action[0] }}" >> $GITHUB_ENV
           echo "VM_NAME=${{ fromJson(steps.parser.outputs.json).vm_name }}" >> $GITHUB_ENV
 
       - name: Setup Terraform
