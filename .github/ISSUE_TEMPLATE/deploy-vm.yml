@@ -1,3 +1,5 @@
+---
+
 name: "Deploy Azure VM"
 description: "Trigger a Terraform deployment with a custom VM name"
 title: "[Deploy] VM: ${vm_name}"
