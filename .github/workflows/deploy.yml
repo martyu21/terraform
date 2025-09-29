@@ -16,7 +16,10 @@ jobs:
 
       - name: Debug Issue Body
         run: echo "${{ github.event.issue.body }}"
-     
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
       - name: Parse IssueOps Form
         id: parser
         uses: issue-ops/parser@v1
@@ -29,9 +32,6 @@ jobs:
         run: |
           echo "ACTION=${{ fromJson(steps.parser.outputs.json).action }}" >> $GITHUB_ENV
           echo "VM_NAME=${{ fromJson(steps.parser.outputs.json).vm_name }}" >> $GITHUB_ENV
-
-      - name: Checkout code
-        uses: actions/checkout@v3
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
