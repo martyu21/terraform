@@ -72,6 +72,14 @@ jobs:
         if: success()
         run: gh --version
 
+      - name: Dump GitHub event
+        run: echo '${{ toJson(github.event) }}'
+
+      - name: Close issue manually
+        run: gh issue close 28 --repo martyu21/terraform
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Close issue if successful
         if: success() && github.event_name == 'issues'
         run: gh issue close "$ISSUE_NUMBER" --repo "$REPO"
