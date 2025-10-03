@@ -36,6 +36,29 @@ jobs:
           echo "ACTION=${{ fromJson(steps.parser.outputs.json).terraform_action[0] }}" >> $GITHUB_ENV
           echo "VM_NAME=${{ fromJson(steps.parser.outputs.json).vm_name }}" >> $GITHUB_ENV
 
+      - name: Check for approval comment
+        id: approval
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          if [[ "$COMMENT" == "/approve" || "$COMMENT" == "/confirm" ]]; then
+            echo "Approved"
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "Not approved"
+            echo "approved=false" >> $GITHUB_OUTPUT
+
+      - name: Proceed if approved
+        if: steps.approval.outputs.approved == 'true'
+        run: echo "Running deployment or destruction..."
+
+      - name: Comment on issue
+        if: steps.approval.outputs.approved == 'true'
+        run: gh issue comment "$ISSUE_NUMBER" --body "✅ Approved. Proceeding with action: $ACTION"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ACTION: ${{ env.ACTION }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
