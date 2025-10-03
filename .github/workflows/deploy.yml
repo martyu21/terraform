@@ -53,7 +53,8 @@ jobs:
 
       - name: Comment on issue
         if: steps.approval.outputs.approved == 'true'
-        run: gh issue comment "$ISSUE_NUMBER" --body " Approved. Proceeding with action: $ACTION"
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "✅ Approved. Proceeding with action: $ACTION"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
