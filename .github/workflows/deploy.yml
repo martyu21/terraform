@@ -40,19 +40,16 @@ jobs:
         id: approval
         run: |
           COMMENT="${{ github.event.comment.body }}"
+          COMMENT=$(echo "$COMMENT" | xargs)  # trim whitespace
           if [[ "$COMMENT" == "/approve" || "$COMMENT" == "/confirm" ]]; then
-            echo "Approved"
             echo "approved=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Not approved"
             echo "approved=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Proceed if approved
-        if: github.event.comment.body == '/approve' || github.event.comment.body == '/confirm'
-        run: echo "Approved. Proceeding with action $ACTION"
-        env:
-          ACTION: ${{ env.ACTION }}
+        if: steps.approval.outputs.approved == 'true'
+        run: echo "✅ Approved. Proceeding with action $ACTION"
 
       - name: Comment on issue
         if: steps.approval.outputs.approved == 'true'
