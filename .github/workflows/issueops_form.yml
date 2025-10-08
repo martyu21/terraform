@@ -1,0 +1,26 @@
+---
+
+# .github/workflows/issueops-form.yml
+name: IssueOps Form
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  form:
+    runs-on: self-hosted
+    steps:
+      - name: Parse issue form
+        run: |
+          echo "VM Name: ${{ github.event.issue.body }}"
+          echo "Action: ${{ env.ACTION }}"
+        env:
+          ACTION: ${{ github.event.issue.body }}  # parse as needed
+
+      - name: Post awaiting approval comment
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "🕒 Awaiting approval. Please comment `/approve` to proceed."
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}

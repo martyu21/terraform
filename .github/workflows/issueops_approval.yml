@@ -1,0 +1,39 @@
+---
+
+# .github/workflows/issueops-approval.yml
+name: IssueOps Approval
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  approve:
+    if: github.event.comment.body == '/approve'
+    runs-on: self-hosted
+    steps:
+      - name: Confirm approval
+        run: |
+          echo "✅ Approval received from ${{ github.event.comment.user.login }}"
+          echo "Proceeding with action: $ACTION"
+        env:
+          ACTION: destroy  # or parse from issue body if needed
+
+      - name: Post confirmation comment
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "✅ Approved by @${{ github.event.comment.user.login }}. Action is now running."
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Trigger deployment workflow
+        if: github.event.comment.body == '/approve'
+        run: |
+          gh workflow run deploy.yml \
+            --repo "$REPO" \
+            --ref main \
+            --field vm_name="$VM_NAME" \
+            --field action="$ACTION"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          REPO: ${{ github.repository }}
