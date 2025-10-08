@@ -50,7 +50,7 @@ jobs:
 
       - name: Proceed if approved
         if: github.event.comment.body == '/approve' || github.event.comment.body == '/confirm'
-        run: echo "✅ Approved. Proceeding with action: $ACTION"
+        run: echo "Approved. Proceeding with action $ACTION"
         env:
           ACTION: ${{ env.ACTION }}
 
