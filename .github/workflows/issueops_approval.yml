@@ -11,6 +11,13 @@ jobs:
   approve:
     if: github.event.comment.body == '/approve'
     runs-on: self-hosted
+    env:
+      TF_VAR_client_id: ${{ secrets.ARM_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.ARM_CLIENT_SECRET }}
+      TF_VAR_subscription_id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      TF_VAR_tenant_id: ${{ secrets.ARM_TENANT_ID }}
+      TF_VAR_admin_password: ${{ secrets.USERPWD }}
+
     steps:
       - name: Confirm approval
         run: |
@@ -26,14 +33,70 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 
-      - name: Trigger deployment workflow
-        if: github.event.comment.body == '/approve'
+      - name: Debug Issue Body
+        run: echo "${{ github.event.issue.body }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: List ISSUE_TEMPLATE contents
+        run: ls -la .github/ISSUE_TEMPLATE
+
+      - name: Parse IssueOps Form
+        id: parser
+        uses: issue-ops/parser@v1
+        with:
+          body: ${{ github.event.issue.body }}
+          issue-form-template: deploy-vm.yml  # ← match your form filename (without .yml)
+
+      - name: Extract VM name
         run: |
-          gh workflow run .github/workflows/deploy.yml \
-            --repo "$REPO" \
-            --ref main \
-            --field vm_name="$VM_NAME" \
-            --field action="$ACTION"
+          echo "ACTION=${{ fromJson(steps.parser.outputs.json).terraform_action[0] }}" >> $GITHUB_ENV
+          echo "VM_NAME=${{ fromJson(steps.parser.outputs.json).vm_name }}" >> $GITHUB_ENV
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Plan
+        if: env.ACTION == 'plan'
+        run: terraform plan -input=false -out=tfplan  -var "vm_name=${{ env.VM_NAME }}"
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Apply
+        if: env.ACTION == 'plan'
+        run: terraform apply -input=false -auto-approve tfplan
+        working-directory: ./modules/azure_vm
+
+      - name: Terraform Destroy
+        if: env.ACTION == 'destroy'
+        run: terraform destroy -auto-approve -var="vm_name=${{ env.VM_NAME }}"
+        working-directory: ./modules/azure_vm
+
+      - name: Check gh CLI version
+        if: success()
+        run: gh --version
+
+      - name: Dump GitHub event
+        run: echo '${{ toJson(github.event) }}'
+                
+      - name: Close issue if successful
+        if: success()
+        run: gh issue close "$ISSUE_NUMBER" --repo "$REPO"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}       
