@@ -29,7 +29,7 @@ jobs:
       - name: Trigger deployment workflow
         if: github.event.comment.body == '/approve'
         run: |
-          gh workflow run deploy.yml \
+          gh workflow run .github/workflows/deploy.yml \
             --repo "$REPO" \
             --ref main \
             --field vm_name="$VM_NAME" \
