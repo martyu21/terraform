@@ -92,7 +92,14 @@ jobs:
 
       - name: Dump GitHub event
         run: echo '${{ toJson(github.event) }}'
-                
+
+      - name: Post confirmation comment
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" \
+            --body "✅ Action has completed successfully. Closing this issue now. Bye 👋"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
       - name: Close issue if successful
         if: success()
         run: gh issue close "$ISSUE_NUMBER" --repo "$REPO"
