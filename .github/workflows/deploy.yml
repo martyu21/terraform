@@ -49,8 +49,10 @@ jobs:
           fi
 
       - name: Proceed if approved
-        if: steps.approval.outputs.approved == 'true'
-        run: echo "Running deployment or destruction..."
+        if: github.event.comment.body == '/approve' || github.event.comment.body == '/confirm'
+        run: echo "✅ Approved. Proceeding with action: $ACTION"
+        env:
+          ACTION: ${{ env.ACTION }}
 
       - name: Comment on issue
         if: steps.approval.outputs.approved == 'true'
