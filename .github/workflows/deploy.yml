@@ -42,10 +42,11 @@ jobs:
           COMMENT="${{ github.event.comment.body }}"
           if [[ "$COMMENT" == "/approve" || "$COMMENT" == "/confirm" ]]; then
             echo "Approved"
-            echo "approved=true" >> $GITHUB_OUTPUT
+            echo "approved=true" >> "$GITHUB_OUTPUT"
           else
             echo "Not approved"
-            echo "approved=false" >> $GITHUB_OUTPUT
+            echo "approved=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Proceed if approved
         if: steps.approval.outputs.approved == 'true'
